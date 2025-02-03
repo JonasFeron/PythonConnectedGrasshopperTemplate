@@ -1,4 +1,21 @@
-﻿using System;
+﻿//Copyright < 2021 - 2025 > < Université catholique de Louvain (UCLouvain)>
+
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+
+//    http://www.apache.org/licenses/LICENSE-2.0
+
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+
+//List of the contributors to the development of PythonConnectedGrasshopperTemplate: see NOTICE file.
+//Description and complete License: see NOTICE file.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -104,8 +121,8 @@ namespace MyGrasshopperPlugIn.MainComponents
 
             TwinData twinData = new TwinData(list, row, col); 
             TwinResult twinResult = new TwinResult();
-            string pathToDataFile = Path.Combine(AccessToAll.solutionDirectory, ".io", "TwinData.txt");
-            string pathToResultFile = Path.Combine(AccessToAll.solutionDirectory, ".io", "TwinResult.txt");
+            string pathToDataFile = Path.Combine(AccessToAll.projectDirectory, ".io", "TwinData.txt");
+            string pathToResultFile = Path.Combine(AccessToAll.projectDirectory, ".io", "TwinResult.txt");
 
             if (AccessToAll.pythonManager != null) // run calculation in python by transfering the data base as a string. 
             {

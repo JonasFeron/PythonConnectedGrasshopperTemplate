@@ -61,8 +61,8 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
             string result = null;
 
             // Set the paths to the files that will contain the data/results.
-            string pathToDataFile = Path.Combine(AccessToAll.solutionDirectory, ".io", "Data4TestPythonComponent.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
-            string pathToResultFile = Path.Combine(AccessToAll.solutionDirectory, ".io", "Result4TestPythonComponent.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
+            string pathToDataFile = Path.Combine(AccessToAll.projectDirectory, ".io", "Data4TestPythonComponent.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
+            string pathToResultFile = Path.Combine(AccessToAll.projectDirectory, ".io", "Result4TestPythonComponent.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
             if (AccessToAll.pythonManager != null)
             {
                 log.Debug("TestPythonComponent.SolveInstance(): pythonManager exists");

@@ -135,10 +135,10 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
                     return;
                 }
 
-                AccessToAll.solutionDirectory = solutionDirectory;
+                AccessToAll.projectDirectory = solutionDirectory;
 
                 // Set up the logger with a desired level
-                LogHelper.Setup(currentLevel.DisplayName, AccessToAll.solutionDirectory);
+                LogHelper.Setup(currentLevel.DisplayName, AccessToAll.projectDirectory);
                 var log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
                 // Start Anaconda

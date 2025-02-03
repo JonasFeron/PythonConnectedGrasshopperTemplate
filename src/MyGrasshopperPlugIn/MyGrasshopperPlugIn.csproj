@@ -27,7 +27,7 @@
     <PackageReference Include="Grasshopper" Version="8.0.23304.9001" Condition="!$(TargetFramework.StartsWith('net4'))" ExcludeAssets="runtime" />
     <PackageReference Include="log4net" Version="3.0.3" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="PythonConnect" Version="1.0.0" />
+    <PackageReference Include="PythonConnect" Version="1.1.0" />
   </ItemGroup>
   
   <!-- For Windows only builds -->

@@ -30,7 +30,7 @@ namespace MyGrasshopperPlugIn
         /// <summary>
         /// Gets or sets the solution directory path.
         /// </summary>
-        public static string solutionDirectory = null;
+        public static string projectDirectory = null;
 
         #endregion Properties
     }
