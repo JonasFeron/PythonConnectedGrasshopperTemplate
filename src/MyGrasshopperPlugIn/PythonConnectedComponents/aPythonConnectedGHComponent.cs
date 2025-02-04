@@ -23,22 +23,22 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using MyGrasshopperPlugIn;
-using MyGrasshopperPlugIn.PythonConnection.TwinObjects;
+using MyGrasshopperPlugIn.PythonConnectedComponents.TwinObjects;
 using Newtonsoft.Json;
 using PythonConnect;
 using Rhino.Commands;
 using Rhino.Geometry;
 
-namespace MyGrasshopperPlugIn.MainComponents
+namespace MyGrasshopperPlugIn.PythonConnectedComponents
 {
-    public class aPythonConnectedGrasshopperComponent : GH_Component
+    public class aPythonConnectedGHComponent : GH_Component
     {
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// Initializes a new instance of the MyComponent1 class.
         /// </summary>
-        public aPythonConnectedGrasshopperComponent()
+        public aPythonConnectedGHComponent()
           : base("aPythonConnectedGrasshopperComponent", "DoStuffInPython",
                 "This is a component that shows how to transfer complex data between the main Grasshopper/C# thread and the (parallel) python thread.\n" +
                 "For instance:\n" +
@@ -46,7 +46,7 @@ namespace MyGrasshopperPlugIn.MainComponents
                 "These input are sent to python\n" +
                 "Python turns the list into a Numpy array of shape (rowNumber,colNumber)\n" +
                 "then the Numpy array is returned in C#/Grasshopper as a Tree",
-              "MyGrasshopperPlugIn", "1. MainComponents")
+              "MyGrasshopperPlugIn", "1. GHComponents")
         {
         }
 

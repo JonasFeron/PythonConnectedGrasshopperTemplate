@@ -1,4 +1,4 @@
-//This file is imported without modification from the official Grasshopper Template:
+//This file is imported (quasi) without modification from the official Grasshopper Template:
 //https://github.com/mcneel/RhinoVisualStudioExtensions/releases
 
 using System;
@@ -7,9 +7,9 @@ using Grasshopper;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
-namespace MyGrasshopperPlugIn.MainComponents
+namespace MyGrasshopperPlugIn.GHComponents
 {
-    public class aGrasshopperComponent : GH_Component
+    public class aGHComponent : GH_Component
     {
         /// <summary>
         /// Each implementation of GH_Component must provide a public 
@@ -18,10 +18,10 @@ namespace MyGrasshopperPlugIn.MainComponents
         /// Subcategory the panel. If you use non-existing tab or panel names, 
         /// new tabs/panels will automatically be created.
         /// </summary>
-        public aGrasshopperComponent()
+        public aGHComponent()
           : base("aGrasshopperComponent", "ASpi",
             "Construct an Archimedean, or arithmetic, spiral given its radii and number of turns.",
-            "MyGrasshopperPlugIn", "1. MainComponents")
+            AccessToAll.GHAssemblyName, AccessToAll.GHComponentsFolder1)
         {
         }
 

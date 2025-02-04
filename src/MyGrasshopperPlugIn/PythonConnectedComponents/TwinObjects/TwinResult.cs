@@ -24,7 +24,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MyGrasshopperPlugIn.PythonConnection.TwinObjects
+namespace MyGrasshopperPlugIn.PythonConnectedComponents.TwinObjects
 {
     /// <summary>
     /// A Twin result object is used to transfer result between the (parallel) python thread and the main Grasshopper/C# thread.\n

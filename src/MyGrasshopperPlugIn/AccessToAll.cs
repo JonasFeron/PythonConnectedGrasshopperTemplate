@@ -42,6 +42,7 @@ namespace MyGrasshopperPlugIn
             }
         }
         public static string GHComponentsFolder0 { get { return "0. Initialize Python"; } }
+        public static string GHComponentsFolder1 { get { return "1. Main Components"; } } 
 
 
         #region Properties

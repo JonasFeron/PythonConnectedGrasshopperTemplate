@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 
-namespace MyGrasshopperPlugIn.PythonConnection.TwinObjects
+namespace MyGrasshopperPlugIn.PythonConnectedComponents.TwinObjects
 {
     /// <summary>
     /// A Twin data object is used to transfer data between the main Grasshopper/C# thread and the (parallel) python thread.\n

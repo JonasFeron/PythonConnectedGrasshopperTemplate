@@ -21,10 +21,10 @@ using PythonConnect;
 using log4net.Core;
 using System.IO;
 
-namespace MyGrasshopperPlugIn.PythonConnection.Components
+namespace MyGrasshopperPlugIn.PythonInitComponents
 {
     public class StartPythonComponent : GH_Component
-    {   
+    {
         #region Properties
         private static readonly Level[] _validLogLevels = { Level.Off, Level.Fatal, Level.Error, Level.Warn, Level.Info, Level.Debug };
         private static readonly int[] _logLevelValues = { Level.Off.Value, Level.Fatal.Value, Level.Error.Value, Level.Warn.Value, Level.Info.Value, Level.Debug.Value };
@@ -56,12 +56,12 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         {
             Grasshopper.Instances.DocumentServer.DocumentRemoved += DocumentClose;
         }
-        
+
 
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddBooleanParameter("Start Python", "Start", "Connect here a toggle. If true, Python/Anaconda starts and can calculate.", GH_ParamAccess.item);
 
@@ -86,7 +86,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// <summary>
         /// Registers all the output parameters for this component.
         /// </summary>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
         }
 
@@ -100,11 +100,11 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
             bool _user_mode = true;
             bool start = false;
             int logLvl = default_logLvl;
-            double timeout = default_timeout; 
+            double timeout = default_timeout;
             string _condaEnvName = default_condaEnvName;
             string _anacondaPath = default_anacondaPath;
 
-   
+
             if (!DA.GetData(0, ref start)) return;
             if (!DA.GetData(1, ref _user_mode)) return;
             if (!DA.GetData(2, ref logLvl)) return;
@@ -206,7 +206,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 
                 // Start Anaconda
                 PythonManager.Setup(AccessToAll.pythonProjectDirectory, AccessToAll.condaActivateScript, AccessToAll.condaEnvName, timeout_ms);
-                
+
                 AccessToAll.pythonManager = PythonManager.Instance; //Initialize a python Thread
 
                 if (AccessToAll.pythonManager != null)
@@ -229,7 +229,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
                 ClosePythonManager();
             }
 
-            if (AccessToAll.pythonManager == null) 
+            if (AccessToAll.pythonManager == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Anaconda stopped. Please relaunch it.");
                 return;

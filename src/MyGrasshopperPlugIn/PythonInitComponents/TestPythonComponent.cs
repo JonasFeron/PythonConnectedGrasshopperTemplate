@@ -22,7 +22,7 @@ using Grasshopper.Kernel;
 using PythonConnect;
 using Rhino.Geometry;
 
-namespace MyGrasshopperPlugIn.PythonConnection.Components
+namespace MyGrasshopperPlugIn.PythonInitComponents
 {
     public class TestPythonComponent : GH_Component
     {
@@ -43,7 +43,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// Registers all the input parameters for this component.
         /// </summary>
         /// <param name="pManager">The input parameter manager.</param>
-        protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
+        protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddTextParameter("TextToLower", "ToLower", "a string argument to be lowercase", GH_ParamAccess.item);
             pManager.AddTextParameter("TextToUpper", "ToUpper", "a string argument to be uppercase", GH_ParamAccess.item);
@@ -53,7 +53,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// Registers all the output parameters for this component.
         /// </summary>
         /// <param name="pManager">The output parameter manager.</param>
-        protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
+        protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("Result text", "result", "string0.ToLower + string1.ToUpper", GH_ParamAccess.item);
         }
@@ -69,7 +69,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Restart the \"StartPythonComponent\".");
                 return;
             }
-            if (!File.Exists(Path.Combine(AccessToAll.pythonProjectDirectory,pythonScript)))
+            if (!File.Exists(Path.Combine(AccessToAll.pythonProjectDirectory, pythonScript)))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Please ensure that \"{pythonScript}\" is located in: {AccessToAll.pythonProjectDirectory}");
                 return;
