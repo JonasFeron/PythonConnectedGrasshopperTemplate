@@ -1,4 +1,7 @@
-﻿using System;
+﻿//This file is imported without modification from the official Grasshopper Template:
+//https://github.com/mcneel/RhinoVisualStudioExtensions/releases
+
+using System;
 using System.Drawing;
 using Grasshopper;
 using Grasshopper.Kernel;

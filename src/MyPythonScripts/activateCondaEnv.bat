@@ -1,3 +1,5 @@
+:: this file was imported from https://github.com/JonasFeron/PythonConnect without any modification
+
 ::Copyright <2021-2025> <ITAO, Université catholique de Louvain (UCLouvain)>
 ::
 ::Licensed under the Apache License, Version 2.0 (the "License");
