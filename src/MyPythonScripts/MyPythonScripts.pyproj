@@ -22,11 +22,11 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="main_aPythonConnectedGrasshopperComponent.py" />
     <Compile Include="python_connect\mainhelper.py" />
     <Compile Include="python_connect\__init__.py" />
+    <Compile Include="complex_script.py" />
     <Compile Include="test_script.py" />
-    <Compile Include="TwinObjects\Twindata.py" />
+    <Compile Include="TwinObjects\TwinData.py" />
     <Compile Include="TwinObjects\TwinResult.py" />
   </ItemGroup>
   <ItemGroup>

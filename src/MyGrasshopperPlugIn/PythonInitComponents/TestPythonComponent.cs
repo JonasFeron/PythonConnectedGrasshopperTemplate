@@ -67,11 +67,13 @@ namespace MyGrasshopperPlugIn.PythonInitComponents
             if (AccessToAll.pythonManager == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Restart the \"StartPythonComponent\".");
+                DA.SetData(0, null);
                 return;
             }
             if (!File.Exists(Path.Combine(AccessToAll.pythonProjectDirectory, pythonScript)))
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Please ensure that \"{pythonScript}\" is located in: {AccessToAll.pythonProjectDirectory}");
+                DA.SetData(0, null);
                 return;
             }
 
@@ -82,17 +84,11 @@ namespace MyGrasshopperPlugIn.PythonInitComponents
             if (!DA.GetData(0, ref str0)) { return; }
             if (!DA.GetData(1, ref str1)) { return; }
 
-            string result = null;
+            string result = AccessToAll.pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, str0, str1);
 
-            if (AccessToAll.pythonManager != null)
+            foreach (string errorMessage in PythonManager.GetErrorMessages())
             {
-                log.Debug("pythonManager exists");
-
-                result = AccessToAll.pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, str0, str1);
-                foreach (string errorMessage in PythonManager.GetErrorMessages())
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
-                }
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
             }
 
             DA.SetData(0, result);

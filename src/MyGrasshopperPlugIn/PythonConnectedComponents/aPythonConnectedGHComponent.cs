@@ -33,20 +33,24 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
 {
     public class aPythonConnectedGHComponent : GH_Component
     {
+        private static readonly string dataPath = Path.Combine(AccessToAll.tempDirectory, "complex_script_TwinData.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
+        private static readonly string resultPath = Path.Combine(AccessToAll.tempDirectory, "complex_script_TwinResult.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
+        private static readonly string pythonScript = "complex_script.py"; // ensure that the python script is located in AccessToAll.pythonProjectDirectory, or provide the relative path to the script.
+
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
         /// Initializes a new instance of the MyComponent1 class.
         /// </summary>
         public aPythonConnectedGHComponent()
-          : base("aPythonConnectedGrasshopperComponent", "DoStuffInPython",
+          : base("aPythonConnectedComponent", "ExecutePython",
                 "This is a component that shows how to transfer complex data between the main Grasshopper/C# thread and the (parallel) python thread.\n" +
                 "For instance:\n" +
                 "this script takes as input in Grasshopper/C#: a list, a number of columns and a number of rows \n" +
                 "These input are sent to python\n" +
                 "Python turns the list into a Numpy array of shape (rowNumber,colNumber)\n" +
                 "then the Numpy array is returned in C#/Grasshopper as a Tree",
-              "MyGrasshopperPlugIn", "1. GHComponents")
+              AccessToAll.GHAssemblyName, AccessToAll.GHComponentsFolder1)
         {
         }
 
@@ -91,17 +95,25 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
 
         }
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
+
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            log.Info("aPythonConnectedGrasshopperComponent.SolveInstance(): NEW CALL To SolveInstance()");
+            if (AccessToAll.pythonManager == null)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Restart the \"StartPythonComponent\".");
+                DA.SetData(0, null);
+                return;
+            }
+            if (!File.Exists(Path.Combine(AccessToAll.pythonProjectDirectory, pythonScript)))
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Please ensure that \"{pythonScript}\" is located in: {AccessToAll.pythonProjectDirectory}");
+                DA.SetData(0, null);
+                return;
+            }
 
             //1) Collect Data
 
-            List<GH_Number> list = new List<GH_Number>();
+            var list = new List<GH_Number>();
             int row = 0;
             int col = 0;
 
@@ -112,50 +124,37 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
 
             //2) Solve in python
 
-            if (AccessToAll.pythonManager == null)
+
+            var twinData = new TwinData(list, row, col); 
+            var twinResult = new TwinResult();
+
+
+            //convert the TwinData object into a string (with JSON format)
+            string dataString = JsonConvert.SerializeObject(twinData, Formatting.None);
+
+            string resultString = AccessToAll.pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, dataString);
+            foreach (string errorMessage in PythonManager.GetErrorMessages())
             {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Please restart the \"StartPythonComponent\" .");
-                DA.SetData(0, null);
-                return;
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
             }
 
-            TwinData twinData = new TwinData(list, row, col); 
-            TwinResult twinResult = new TwinResult();
-            string pathToDataFile = Path.Combine(AccessToAll.rootDirectory, ".io", "TwinData.txt");
-            string pathToResultFile = Path.Combine(AccessToAll.rootDirectory, ".io", "TwinResult.txt");
-
-            if (AccessToAll.pythonManager != null) // run calculation in python by transfering the data base as a string. 
+            //convert the result (contained in a string) into a TwinResult object
+            try
             {
-                //convert the TwinData object into a string (with JSON format)
-                string dataString = JsonConvert.SerializeObject(twinData, Formatting.None);
-
-                //execute the python script
-                log.Debug("aPythonConnectedGrasshopperComponent.SolveInstance(): try executing the python Script");
-                string resultString = null;
-                resultString = AccessToAll.pythonManager.ExecuteCommand("main_aPythonConnectedGrasshopperComponent.py", pathToDataFile, pathToResultFile, dataString);
-                log.Debug("aPythonConnectedGrasshopperComponent.SolveInstance(): the python Script returned: " + resultString);
-
-
-                //convert the result (contained in a string) into a TwinResult object
-                try
-                {
-                    JsonConvert.PopulateObject(resultString, twinResult); 
-                }
-                catch
-                {
-
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went wrong while solving: " + resultString);
-                    twinResult = null;
-                }
+                JsonConvert.PopulateObject(resultString, twinResult);
+            }
+            catch (Exception e)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"python result= {resultString}");
+                return;
             }
 
             //3) return the result
             List<List<double>> matrix = twinResult.Matrix;
             GH_Structure<GH_Number> gh_structure = TwinResult.ListListToGH_Struct(matrix); //convert the result into a Grasshopper tree
 
-            log.Debug("aPythonConnectedGrasshopperComponent.SolveInstance(): return the results to the Grasshopper Component");
             DA.SetDataTree(0, gh_structure);
-            log.Info("aPythonConnectedGrasshopperComponent.SolveInstance(): END SOLVE INSTANCE");
         }
 
     }

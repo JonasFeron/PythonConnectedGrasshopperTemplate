@@ -9,7 +9,7 @@ class TwinResult():
         self.TypeName = "TwinResult"
         self.Matrix = []
 
-    def populateWith(self, array):
+    def populate_with(self, array):
         if isinstance(array, np.ndarray):
             self.Matrix = array.tolist()
 

@@ -159,12 +159,23 @@ namespace MyGrasshopperPlugIn
 
 
 
+        private static bool _user_mode = true; 
 
         /// <summary>
         /// Gets or sets a value indicating whether the plugin is in user mode.
         /// True for user mode, false for developer mode.
         /// </summary>
-        public static bool user_mode = true;
+        public static bool user_mode
+        {
+            get
+            {
+                return _user_mode;
+            }
+            set
+            {
+                _user_mode = value;
+            }
+        }
 
         /// <summary>
         /// Gets the Special Folder with path : "C:\\Users\\Me\\AppData\\Roaming\\Grasshopper\\Libraries\\"
