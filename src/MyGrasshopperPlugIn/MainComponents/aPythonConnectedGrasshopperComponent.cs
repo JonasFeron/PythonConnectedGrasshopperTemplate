@@ -121,8 +121,8 @@ namespace MyGrasshopperPlugIn.MainComponents
 
             TwinData twinData = new TwinData(list, row, col); 
             TwinResult twinResult = new TwinResult();
-            string pathToDataFile = Path.Combine(AccessToAll.projectDirectory, ".io", "TwinData.txt");
-            string pathToResultFile = Path.Combine(AccessToAll.projectDirectory, ".io", "TwinResult.txt");
+            string pathToDataFile = Path.Combine(AccessToAll.rootDirectory, ".io", "TwinData.txt");
+            string pathToResultFile = Path.Combine(AccessToAll.rootDirectory, ".io", "TwinResult.txt");
 
             if (AccessToAll.pythonManager != null) // run calculation in python by transfering the data base as a string. 
             {

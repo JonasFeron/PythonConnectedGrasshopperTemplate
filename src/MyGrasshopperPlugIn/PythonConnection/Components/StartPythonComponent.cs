@@ -16,55 +16,71 @@
 //Description and complete License: see NOTICE file.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Text;
 using Grasshopper.Kernel;
-using Rhino.Geometry;
 using PythonConnect;
-using System.ComponentModel;
-using System.Reflection;
 using log4net.Core;
+using System.IO;
 
 namespace MyGrasshopperPlugIn.PythonConnection.Components
 {
     public class StartPythonComponent : GH_Component
-    {
-
-        public event GH_DocumentServer.DocumentRemovedEventHandler DocumentRemovedEvent; //does not seem to work ! 
-
-        /// <summary>
-        /// Initializes a new instance of the MyComponent1 class.
-        /// </summary>
-        public StartPythonComponent()
-          : base("StartPythonComponent", "Python",
-              "Initialize Python to be able to run any calculation",
-              "MyGrasshopperPlugIn", "0.")
+    {   
+        #region Properties
+        private static readonly Level[] _validLogLevels = { Level.Off, Level.Fatal, Level.Error, Level.Warn, Level.Info, Level.Debug };
+        private static readonly int[] _logLevelValues = { Level.Off.Value, Level.Fatal.Value, Level.Error.Value, Level.Warn.Value, Level.Info.Value, Level.Debug.Value };
+        private static string default_anacondaPath
         {
-            DocumentRemovedEvent += DocumentClose;
+            get
+            {
+                if (AccessToAll.anacondaPath != null)
+                {
+                    return AccessToAll.anacondaPath;
+                }
+                else
+                {
+                    return @"C:\Users\Me\Anaconda3";
+                }
+            }
         }
+        private static readonly string default_condaEnvName = "base";
+
+        private static readonly int default_logLvl = Level.Off.Value;
+        private static readonly double default_timeout = 10;
+
+
+        #endregion Properties
+
+        public StartPythonComponent()
+          : base("StartPythonComponent", "StartPy",
+              "Initialize Python before running any calculation", AccessToAll.GHAssemblyName, "0.")
+        {
+            Grasshopper.Instances.DocumentServer.DocumentRemoved += DocumentClose;
+        }
+        
 
         /// <summary>
         /// Registers all the input parameters for this component.
         /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddBooleanParameter("User mode", "user", "true for user mode, false for developer mode.", GH_ParamAccess.item, true);
-            pManager[0].Optional = true;
             pManager.AddBooleanParameter("Start Python", "Start", "Connect here a toggle. If true, Python/Anaconda starts and can calculate.", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Level", "lvl", "Level of messages in the Log file for debbuging: choose the level from the provided list", GH_ParamAccess.item);
+
+            pManager.AddBooleanParameter("User mode", "user", "true for user mode, false for developer mode.", GH_ParamAccess.item, true);
+            pManager[1].Optional = true;
+            pManager.AddIntegerParameter("Level", "lvl", "Level of messages in the Log file for debbuging: choose the level from the provided list.", GH_ParamAccess.item, default_logLvl);
             pManager[2].Optional = true;
-            pManager.AddIntegerParameter("TimeOut", "timeout", "This is the time (in milliseconds) a python script will be allowed to run before it is aborted.", GH_ParamAccess.item, 10000);
+            pManager.AddNumberParameter("TimeOut", "timeout", "This is the time (in seconds) a python script will be allowed to run before it is aborted.", GH_ParamAccess.item, default_timeout);
             pManager[3].Optional = true;
+            pManager.AddTextParameter("conda Environment Name", "condaEnv", "Name of the conda environment to activate.", GH_ParamAccess.item, default_condaEnvName);
+            pManager[4].Optional = true;
+            pManager.AddTextParameter("Anaconda Directory", "condaPath", "Path to the directory where Anaconda3 is installed.", GH_ParamAccess.item, default_anacondaPath);
+            pManager[5].Optional = true;
 
             var levels = pManager[2] as Grasshopper.Kernel.Parameters.Param_Integer;
-            levels.AddNamedValue(Level.Debug.DisplayName, Level.Debug.Value);
-            levels.AddNamedValue(Level.Info.DisplayName, Level.Info.Value);
-            levels.AddNamedValue(Level.Warn.DisplayName, Level.Warn.Value);
-            levels.AddNamedValue(Level.Error.DisplayName, Level.Error.Value);
-            levels.AddNamedValue(Level.Fatal.DisplayName, Level.Fatal.Value);
-            levels.AddNamedValue(Level.Off.DisplayName, Level.Off.Value);
+            foreach (var level in _validLogLevels)
+            {
+                levels.AddNamedValue(level.DisplayName, level.Value);
+            }
         }
 
         /// <summary>
@@ -80,36 +96,89 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// <param name="DA">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            //1) Collect Data
-            bool user_mode = true;
+            //1) Initialize and Collect Data
+            bool _user_mode = true;
             bool start = false;
-            int logLvl = Level.Off.Value;
+            int logLvl = default_logLvl;
+            double timeout = default_timeout; 
+            string _condaEnvName = default_condaEnvName;
+            string _anacondaPath = default_anacondaPath;
 
-            int timeout = 10000; //10 seconds. This is the time a python script will be allowed to run before it is killed.
-            
-            if (!DA.GetData(0, ref user_mode)) return;
-            if (!DA.GetData(1, ref start)) return;
+   
+            if (!DA.GetData(0, ref start)) return;
+            if (!DA.GetData(1, ref _user_mode)) return;
             if (!DA.GetData(2, ref logLvl)) return;
             if (!DA.GetData(3, ref timeout)) return;
+            if (!DA.GetData(4, ref _condaEnvName)) return;
+            if (!DA.GetData(5, ref _anacondaPath)) return;
 
-            //2) Process Data. Is it valid ?
-            AccessToAll.user_mode = user_mode;
-            List<int> listOfValidLevelValues = new List<int> { Level.Off.Value, Level.Fatal.Value, Level.Error.Value, Level.Warn.Value, Level.Info.Value, Level.Debug.Value };
 
-            if (!listOfValidLevelValues.Contains(logLvl))
+            //2) Check validity of Data ?
+            AccessToAll.user_mode = _user_mode;
+
+            if (AccessToAll.user_mode && !Directory.Exists(AccessToAll.rootDirectory))
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Check that {AccessToAll.GHAssemblyName} has been correctly installed in: {AccessToAll.specialFolder}");
+                return;
+            }
+            if (!AccessToAll.user_mode && !Directory.Exists(AccessToAll.rootDirectory)) //Developer mode
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Check the path to {AccessToAll.rootDirectory}");
+                return;
+            }
+
+
+
+            try
+            {
+                AccessToAll.anacondaPath = _anacondaPath;
+            }
+            catch (ArgumentException e)
+            {
+                string default_msg = $"Please provide a valid path, similar to: {default_anacondaPath}";
+                if (_anacondaPath == default_anacondaPath)
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Impossible to find a valid Anaconda3 Installation. " + default_msg);
+                    return;
+                }
+                else
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message + default_msg);
+                    return;
+                }
+            }
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"A valid Anaconda3 installation was found here: {AccessToAll.anacondaPath}");
+
+
+            try
+            {
+                AccessToAll.condaEnvName = _condaEnvName;
+            }
+            catch (ArgumentException e)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
+                return;
+            }
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"\"{AccessToAll.condaEnvName}\" is a valid anaconda environment");
+
+
+            int index = Array.IndexOf(_logLevelValues, logLvl);
+            if (index == -1)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Please choose a valid LogLevel from the provided input list");
-                logLvl = Level.Off.Value;
+                logLvl = default_logLvl;
+                index = Array.IndexOf(_logLevelValues, logLvl);
             }
-            int index = listOfValidLevelValues.IndexOf(logLvl);
-            List<Level> listOfValidLevel = new List<Level> { Level.Off, Level.Fatal, Level.Error, Level.Warn, Level.Info, Level.Debug };
-            Level currentLevel = listOfValidLevel[index];
+            Level currentLevel = _validLogLevels[index];
+
 
             if (timeout <= 0)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Timeout must be greater than 0");
-                timeout = 10000;
+                timeout = 10;
             }
+            int timeout_ms = Convert.ToInt32(timeout * 1000);
+
 
 
             //3) Initialize Python (and log4net for debugging)
@@ -122,45 +191,15 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 
             if (start && AccessToAll.pythonManager == null) //start Anaconda
             {
-                string solutionDirectory;
-                string pythonProjectDirectory;
-                string pathToActivateConda;
-
-                if (user_mode)
-                {
-                    DirectoryInfo specialFolder = SpecialFolder();
-                    solutionDirectory = Path.Combine(specialFolder.FullName, "MyGrasshopperPlugIn");
-                    //retrieve path to anaconda from the PathToAnaconda.txt file
-                    pathToActivateConda = PathToAnaconda(solutionDirectory);
-                }
-                else // in case of working in debug/developer mode
-                {
-                    pathToActivateConda = @"C:\Users\Jonas\anaconda3\Scripts\activate.bat"; //overwrite your own path to anaconda
-                    solutionDirectory = new DirectoryInfo(Directory.GetCurrentDirectory()).Parent.Parent.Parent.Parent.FullName; // new DirectoryInfo(Directory.GetCurrentDirectory()) return @"...\Rhino.Template.CSharpPython\Rhino.Template.CSharpPython\bin\Debug\net48" where PythonConnect.TestConsole.exe is located. 
-                }
-                //define path to the python project
-                pythonProjectDirectory = Path.Combine(solutionDirectory, "MyPythonScripts");
-
-                if (string.IsNullOrEmpty(pythonProjectDirectory))
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Failed to retrieve python scripts\n Check your path \\AppData\\Roaming\\Grasshopper\\Libraries\\MyGrasshopperPlugIn\\MyPythonScripts");
-                    return;
-                }
-                if (string.IsNullOrEmpty(pathToActivateConda))
-                {
-                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Failed to retrieve Anaconda script: activate.bat\n Check that PathToAnaconda is well configured in \\AppData\\Roaming\\Grasshopper\\Libraries\\MyGrasshopperPlugIn\\PathToAnaconda.txt");
-                    return;
-                }
-
-                AccessToAll.projectDirectory = solutionDirectory;
 
                 // Set up the logger with a desired level
-                LogHelper.Setup(currentLevel.DisplayName, AccessToAll.projectDirectory);
+                LogHelper.Setup(currentLevel.DisplayName, AccessToAll.tempDirectory);
                 var log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
                 // Start Anaconda
-                PythonManager.Setup(timeout, pathToActivateConda, pythonProjectDirectory);
-                AccessToAll.pythonManager = PythonManager.Instance;
+                PythonManager.Setup(AccessToAll.pythonProjectDirectory, AccessToAll.condaActivateScript, AccessToAll.condaEnvName, timeout_ms);
+                
+                AccessToAll.pythonManager = PythonManager.Instance; //Initialize a python Thread
 
                 if (AccessToAll.pythonManager != null)
                 {
@@ -169,14 +208,17 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
                 else
                 {
                     AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Failed to start Anaconda.");
+                    foreach (string errorMessage in PythonManager.GetErrorMessages())
+                    {
+                        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
+                    }
                 }
                 return;
             }
 
-            if (!start && AccessToAll.pythonManager != null) //stop Anaconda
+            if (!start) //stop Anaconda
             {
-                AccessToAll.pythonManager.Dispose();
-                AccessToAll.pythonManager = null;
+                ClosePythonManager();
             }
 
             if (AccessToAll.pythonManager == null) 
@@ -193,12 +235,17 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// <param name="doc"></param>
         private void DocumentClose(GH_DocumentServer sender, GH_Document doc)
         {
+            ClosePythonManager();
+        }
+        private void ClosePythonManager()
+        {
             if (AccessToAll.pythonManager != null)
             {
                 AccessToAll.pythonManager.Dispose();
                 AccessToAll.pythonManager = null;
             }
         }
+
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -218,49 +265,12 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("ad3f8b77-9942-471e-aa12-aebc7c2b075a"); }
+            get { return new Guid("e2fe9063-2b08-4b68-9e43-bd38e3abad1b"); }
         }
 
-        /// <summary>
-        /// return the directory with path : "C:\\Users\\Me\\AppData\\Roaming\\Grasshopper\\Libraries\\"
-        /// </summary>
-        /// <returns></returns>
-        private DirectoryInfo SpecialFolder()
-        {
-            foreach (GH_AssemblyFolderInfo dir in Grasshopper.Folders.AssemblyFolders)
-            {
-                if (dir.Folder.Contains("\\AppData\\Roaming\\Grasshopper\\Libraries"))
-                {
-                    return new DirectoryInfo(dir.Folder);
-                }
-            }
-            return null;
-        }
 
-        private string PathToAnaconda(string solutionFolder)
-        {
-            string file = "PathToAnaconda.txt";
-            try
-            {
-                string fullPathToFile = Path.Combine(solutionFolder, file);
-                foreach (var line in File.ReadAllLines(fullPathToFile))
-                {
-                    if (line.Contains("Users\\Jonas"))
-                    {
-                        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Please configure the path to anaconda in your special folder: \\AppData\\Roaming\\Grasshopper\\Libraries\\MyGrasshopperPlugIn\\PathToAnaconda.txt");
-                    }
-                    if (line.Contains("activate.bat") || line.Contains("activate"))
-                    {
-                        return line;
-                    }
-                }
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
-        }
+
+
 
     }
 

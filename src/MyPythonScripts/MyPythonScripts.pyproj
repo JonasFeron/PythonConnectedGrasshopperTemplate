@@ -4,7 +4,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>a23289b8-bd98-4335-94f7-9cc74112bfe6</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>PythonApplication1.py</StartupFile>
+    <StartupFile>
+    </StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -21,7 +22,19 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="PythonApplication1.py" />
+    <Compile Include="main_aPythonConnectedGrasshopperComponent.py" />
+    <Compile Include="python_connect\mainhelper.py" />
+    <Compile Include="python_connect\__init__.py" />
+    <Compile Include="test_script.py" />
+    <Compile Include="TwinObjects\Twindata.py" />
+    <Compile Include="TwinObjects\TwinResult.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="python_connect\" />
+    <Folder Include="TwinObjects\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="activateCondaEnv.bat" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
