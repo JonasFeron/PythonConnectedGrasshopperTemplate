@@ -52,7 +52,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 
         public StartPythonComponent()
           : base("StartPythonComponent", "StartPy",
-              "Initialize Python before running any calculation", AccessToAll.GHAssemblyName, "0.")
+              "Initialize Python before running any calculation", AccessToAll.GHAssemblyName, AccessToAll.GHComponentsFolder0)
         {
             Grasshopper.Instances.DocumentServer.DocumentRemoved += DocumentClose;
         }
@@ -67,7 +67,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 
             pManager.AddBooleanParameter("User mode", "user", "true for user mode, false for developer mode.", GH_ParamAccess.item, true);
             pManager[1].Optional = true;
-            pManager.AddIntegerParameter("Level", "lvl", "Level of messages in the Log file for debbuging: choose the level from the provided list.", GH_ParamAccess.item, default_logLvl);
+            pManager.AddIntegerParameter("Level", "lvl", "Level of messages in the Log file for debuging: choose the level from the provided list (right click).", GH_ParamAccess.item, default_logLvl);
             pManager[2].Optional = true;
             pManager.AddNumberParameter("TimeOut", "timeout", "This is the time (in seconds) a python script will be allowed to run before it is aborted.", GH_ParamAccess.item, default_timeout);
             pManager[3].Optional = true;
@@ -114,6 +114,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 
 
             //2) Check validity of Data ?
+            #region Check Data
             AccessToAll.user_mode = _user_mode;
 
             if (AccessToAll.user_mode && !Directory.Exists(AccessToAll.rootDirectory))
@@ -124,6 +125,12 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
             if (!AccessToAll.user_mode && !Directory.Exists(AccessToAll.rootDirectory)) //Developer mode
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Check the path to {AccessToAll.rootDirectory}");
+                return;
+            }
+
+            if (AccessToAll.activateCondaEnvScript == null)
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Please ensure that the file \"activateCondaEnv.bat\" is located in: {AccessToAll.pythonProjectDirectory}");
                 return;
             }
 
@@ -179,6 +186,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
             }
             int timeout_ms = Convert.ToInt32(timeout * 1000);
 
+            #endregion Check Data
 
 
             //3) Initialize Python (and log4net for debugging)

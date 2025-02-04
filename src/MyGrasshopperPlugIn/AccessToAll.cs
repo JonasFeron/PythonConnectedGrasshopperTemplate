@@ -41,9 +41,10 @@ namespace MyGrasshopperPlugIn
                 return info.Name;
             }
         }
+        public static string GHComponentsFolder0 { get { return "0. Initialize Python"; } }
 
 
-        #region Python Properties
+        #region Properties
 
         /// <summary>
         /// Gets or sets the PythonManager for the current Canvas. 
@@ -155,10 +156,8 @@ namespace MyGrasshopperPlugIn
             }
         }
 
-        #endregion Python Properties
 
 
-        #region Directories
 
         /// <summary>
         /// Gets or sets a value indicating whether the plugin is in user mode.
@@ -210,6 +209,27 @@ namespace MyGrasshopperPlugIn
         {
             get { return Path.Combine(rootDirectory, "MyPythonScripts"); }
         }
+
+        /// <summary>
+        /// Gets the path to activateCondaEnv.bat file. Users must ensure this file is located in pythonProjectDirectory.
+        /// </summary>
+        /// <remarks>
+        /// If activateCondaEnv.bat exists in pythonProjectDirectory, the path is returned. Otherwise, null is returned.
+        /// </remarks>
+        public static string activateCondaEnvScript
+        {
+            get
+            {
+                string path = Path.Combine(pythonProjectDirectory, "activateCondaEnv.bat");
+                if (File.Exists(path))
+                {
+                    return path;
+                }
+                else return null;
+            }
+        }
+
+
         public static string csharpProjectDirectory
         {
             get { return Path.Combine(rootDirectory, GHAssemblyName); }
@@ -219,7 +239,7 @@ namespace MyGrasshopperPlugIn
             get { return Path.Combine(rootDirectory, ".temp"); }
         }
 
-        #endregion Directories
+        #endregion Properties
 
 
 

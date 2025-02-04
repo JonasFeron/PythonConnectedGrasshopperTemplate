@@ -26,15 +26,16 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 {
     public class TestPythonComponent : GH_Component
     {
+        private static readonly string dataPath = Path.Combine(AccessToAll.tempDirectory, "test_script_data.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
+        private static readonly string resultPath = Path.Combine(AccessToAll.tempDirectory, "test_script_result.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
+        private static readonly string pythonScript = "test_script.py"; // ensure that the python script is located in AccessToAll.pythonProjectDirectory, or provide the relative path to the script.
+
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        /// <summary>
-        /// Initializes a new instance of the TestPythonComponent class.
-        /// </summary>
         public TestPythonComponent()
           : base("TestPython", "test",
-              "Test to see if python is well working.",
-              "MyGrasshopperPlugIn", "0.")
+              "Test to check if python works well.",
+              AccessToAll.GHAssemblyName, AccessToAll.GHComponentsFolder0)
         {
         }
 
@@ -44,8 +45,8 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// <param name="pManager">The input parameter manager.</param>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddTextParameter("TextToLower", "ToLower", "a test script", GH_ParamAccess.item);
-            pManager.AddTextParameter("TextToUpper", "ToUpper", "a test script", GH_ParamAccess.item);
+            pManager.AddTextParameter("TextToLower", "ToLower", "a string argument to be lowercase", GH_ParamAccess.item);
+            pManager.AddTextParameter("TextToUpper", "ToUpper", "a string argument to be uppercase", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -58,16 +59,22 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         }
 
         /// <summary>
-        /// This is the method that actually does the work.
+        /// This Grasshopper component executes the Python script "test_script.py" with the arguments "str0" and "str1".
         /// </summary>
         /// <param name="DA">The data access object for retrieving input and setting output.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             if (AccessToAll.pythonManager == null)
             {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Please restart the \"StartPythonComponent\" .");
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Restart the \"StartPythonComponent\".");
                 return;
             }
+            if (!File.Exists(Path.Combine(AccessToAll.pythonProjectDirectory,pythonScript)))
+            {
+                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Please ensure that \"{pythonScript}\" is located in: {AccessToAll.pythonProjectDirectory}");
+                return;
+            }
+
 
             string str0 = "";
             string str1 = "";
@@ -77,14 +84,15 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
 
             string result = null;
 
-            // Set the paths to the files that will contain the data/results.
-            string pathToDataFile = Path.Combine(AccessToAll.rootDirectory, ".io", "Data4TestPythonComponent.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
-            string pathToResultFile = Path.Combine(AccessToAll.rootDirectory, ".io", "Result4TestPythonComponent.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
             if (AccessToAll.pythonManager != null)
             {
-                log.Debug("TestPythonComponent.SolveInstance(): pythonManager exists");
+                log.Debug("pythonManager exists");
 
-                result = AccessToAll.pythonManager.ExecuteCommand("main_TestPythonComponent.py", pathToDataFile, pathToResultFile, str0, str1);
+                result = AccessToAll.pythonManager.ExecuteCommand(pythonScript, dataPath, resultPath, str0, str1);
+                foreach (string errorMessage in PythonManager.GetErrorMessages())
+                {
+                    AddRuntimeMessage(GH_RuntimeMessageLevel.Error, errorMessage);
+                }
             }
 
             DA.SetData(0, result);
@@ -106,7 +114,7 @@ namespace MyGrasshopperPlugIn.PythonConnection.Components
         /// </summary>
         public override Guid ComponentGuid
         {
-            get { return new Guid("22620f84-d35f-44fb-9562-4e394e068088"); }
+            get { return new Guid("a1bbd7fc-6605-4f5c-b3f7-889d696395bf"); }
         }
     }
 }
