@@ -587,4 +587,6 @@ desktop.ini
 # Specific to this solution
 
 .temp/
+.private/
+
 

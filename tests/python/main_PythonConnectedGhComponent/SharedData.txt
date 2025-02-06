@@ -1,2 +1,0 @@
-73f16727-afbb-4e12-87d7-80f39ab02b21
-{"TypeName":"TwinData","AList":[0.0,1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0],"rowNumber":2,"colNumber":5}
