@@ -15,8 +15,8 @@
 # List of the contributors to the development of PythonConnectedGrasshopperTemplate: see NOTICE file.
 # Description and complete License: see NOTICE file.
 
+# this file was imported from https://github.com/JonasFeron/PythonConnect and is used without modification.
 # ------------------------------------------------------------------------------------------------------------
-# this file was imported from https://github.com/JonasFeron/PythonConnect 
 
 # Copyright <2021-2025> <ITAO, Université catholique de Louvain (UCLouvain)>
 

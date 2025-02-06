@@ -14,6 +14,8 @@
 
 //List of the contributors to the development of PythonConnectedGrasshopperTemplate: see NOTICE file.
 //Description and complete License: see NOTICE file.
+//------------------------------------------------------------------------------------------------------------
+
 using System;
 using System.Collections.Generic;
 using System.IO;
