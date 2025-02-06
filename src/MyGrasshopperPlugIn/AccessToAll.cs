@@ -158,24 +158,11 @@ namespace MyGrasshopperPlugIn
         }
 
 
-
-        private static bool _user_mode = true; 
-
         /// <summary>
         /// Gets or sets a value indicating whether the plugin is in user mode.
         /// True for user mode, false for developer mode.
         /// </summary>
-        public static bool user_mode
-        {
-            get
-            {
-                return _user_mode;
-            }
-            set
-            {
-                _user_mode = value;
-            }
-        }
+        public static bool user_mode = true;
 
         /// <summary>
         /// Gets the Special Folder with path : "C:\\Users\\Me\\AppData\\Roaming\\Grasshopper\\Libraries\\"
@@ -184,8 +171,8 @@ namespace MyGrasshopperPlugIn
         {
             get 
             { 
-                string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                return Path.Combine(AppData, "Roaming", "Grasshopper", "Libraries");
+                string AppData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData); // AppData = "C:\Users\Me\AppData\Roaming"
+                return Path.Combine(AppData,"Grasshopper", "Libraries");
             }
         }
 

@@ -26,10 +26,6 @@ namespace MyGrasshopperPlugIn.PythonInitComponents
 {
     public class TestPythonComponent : GH_Component
     {
-        private static readonly string dataPath = Path.Combine(AccessToAll.tempDirectory, "test_script_data.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
-        private static readonly string resultPath = Path.Combine(AccessToAll.tempDirectory, "test_script_result.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
-        private static readonly string pythonScript = "test_script.py"; // ensure that the python script is located in AccessToAll.pythonProjectDirectory, or provide the relative path to the script.
-
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public TestPythonComponent()
@@ -64,6 +60,10 @@ namespace MyGrasshopperPlugIn.PythonInitComponents
         /// <param name="DA">The data access object for retrieving input and setting output.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            string dataPath = Path.Combine(AccessToAll.tempDirectory, "test_script_data.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
+            string resultPath = Path.Combine(AccessToAll.tempDirectory, "test_script_result.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
+            string pythonScript = "test_script.py"; // ensure that the python script is located in AccessToAll.pythonProjectDirectory, or provide the relative path to the script.
+
             if (AccessToAll.pythonManager == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Restart the \"StartPythonComponent\".");

@@ -33,10 +33,6 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
 {
     public class aPythonConnectedGHComponent : GH_Component
     {
-        private static readonly string dataPath = Path.Combine(AccessToAll.tempDirectory, "complex_script_TwinData.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
-        private static readonly string resultPath = Path.Combine(AccessToAll.tempDirectory, "complex_script_TwinResult.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
-        private static readonly string pythonScript = "complex_script.py"; // ensure that the python script is located in AccessToAll.pythonProjectDirectory, or provide the relative path to the script.
-
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
@@ -98,6 +94,10 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            string dataPath = Path.Combine(AccessToAll.tempDirectory, "complex_script_TwinData.txt"); // The main C# thread will write the data to the file, and the python thread will read it.
+            string resultPath = Path.Combine(AccessToAll.tempDirectory, "complex_script_TwinResult.txt"); // The python thread will write the results to the file, and the main C# thread will read it.
+            string pythonScript = "complex_script.py"; // ensure that the python script is located in AccessToAll.pythonProjectDirectory, or provide the relative path to the script.
+
             if (AccessToAll.pythonManager == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Restart the \"StartPythonComponent\".");

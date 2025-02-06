@@ -97,8 +97,8 @@ namespace MyGrasshopperPlugIn.PythonInitComponents
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             //1) Initialize and Collect Data
-            bool _user_mode = true;
             bool start = false;
+            bool _user_mode = true;
             int logLvl = default_logLvl;
             double timeout = default_timeout;
             string _condaEnvName = default_condaEnvName;
