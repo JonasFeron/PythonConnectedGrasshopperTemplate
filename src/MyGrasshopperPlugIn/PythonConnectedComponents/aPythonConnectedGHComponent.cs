@@ -19,16 +19,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using MyGrasshopperPlugIn;
 using MyGrasshopperPlugIn.PythonConnectedComponents.TwinObjects;
 using Newtonsoft.Json;
 using PythonConnect;
-using Rhino.Commands;
-using Rhino.Geometry;
+
 
 namespace MyGrasshopperPlugIn.PythonConnectedComponents
 {
@@ -36,9 +33,6 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
     {
         private static readonly log4net.ILog log = LogHelper.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        /// <summary>
-        /// Initializes a new instance of the MyComponent1 class.
-        /// </summary>
         public aPythonConnectedGHComponent()
           : base("aPythonConnectedComponent", "ExecutePython",
                 "This is a component that shows how to transfer complex data between the main Grasshopper/C# thread and the (parallel) python thread.\n" +
@@ -51,45 +45,16 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
         {
         }
 
-        /// <summary>
-        /// Provides an Icon for the component.
-        /// </summary>
-        protected override System.Drawing.Bitmap Icon
-        {
-            get
-            {
-                //You can add image files to your project resources and access them like this:
-                // return Resources.IconForThisComponent;
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Gets the unique ID for this component. Do not change this ID after release.
-        /// </summary>
-        public override Guid ComponentGuid
-        {
-            get { return new Guid("7e35c61f-3bd0-4e8d-8e37-de5f7e7d363b"); }
-        }
-
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager pManager)
         {
             pManager.AddNumberParameter("A List of Numbers", "list", "A list of numbers to be converted in python into a Numpy array with rowNumber rows and colNumber columns", GH_ParamAccess.list);
             pManager.AddIntegerParameter("Row Number", "rowNumber", "The Number of Rows of the returned Numpy array", GH_ParamAccess.item);
-            pManager.AddIntegerParameter("Columns Number", "colNumber", "The Number of Columns of the returned Numpy array", GH_ParamAccess.item);
-
+            pManager.AddIntegerParameter("Column Number", "colNumber", "The Number of Columns of the returned Numpy array", GH_ParamAccess.item);
         }
 
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
         protected override void RegisterOutputParams(GH_OutputParamManager pManager)
         {
             pManager.AddNumberParameter("Grasshopper tree", "tree", "A python numpy array converted back into a Grasshopper tree", GH_ParamAccess.tree);
-
         }
 
 
@@ -156,6 +121,30 @@ namespace MyGrasshopperPlugIn.PythonConnectedComponents
             GH_Structure<GH_Number> gh_structure = TwinResult.ListListToGH_Struct(matrix); //convert the result into a Grasshopper tree
 
             DA.SetDataTree(0, gh_structure);
+        }
+
+
+
+
+        /// <summary>
+        /// Provides an Icon for the component.
+        /// </summary>
+        protected override System.Drawing.Bitmap Icon
+        {
+            get
+            {
+                //You can add image files to your project resources and access them like this:
+                // return Resources.IconForThisComponent;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the unique ID for this component. Do not change this ID after release.
+        /// </summary>
+        public override Guid ComponentGuid
+        {
+            get { return new Guid("7e35c61f-3bd0-4e8d-8e37-de5f7e7d363b"); }
         }
 
     }
